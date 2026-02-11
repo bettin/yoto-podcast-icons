@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<!--
+  Yoto Podcast Icon Generator
+  MIT License — Copyright (c) 2025
+  See LICENSE file for details.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Generate pixel-perfect 16×16 PNG icons for Yoto player podcast cards. Free, open source, no sign-up required.">
+<title>Yoto Podcast Icon Generator</title>
+<style>
+  :root {
+    --bg-page: #f5f5f8;
+    --bg-card: #ffffff;
+    --bg-preview: #111118;
+    --border: #dddde2;
+    --border-hover: #c4c4cc;
+    --text-1: #1a1a1f;
+    --text-2: #62626a;
+    --text-3: #97979f;
+    --green: #16a34a;
+    --green-hover: #15803d;
+    --green-light: #dcfce7;
+    --green-text: #166534;
+    --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-1);
+    min-height: 100vh;
+    padding-top: 3px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Top palette gradient bar ── */
+  .top-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    z-index: 100;
+    transition: background 0.4s ease;
+  }
+
+  /* ── Layout ── */
+  .container {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 48px 0 40px;
+    max-width: 640px;
+  }
+  .badge {
+    display: inline-block;
+    background: var(--green-light);
+    color: var(--green-text);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .hero-title-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .logo-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  .hero-desc {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-2);
+  }
+  .hero-desc a {
+    color: var(--text-1);
+    text-underline-offset: 2px;
+  }
+  .hero-note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: #eef0f4;
+    border-left: 3px solid var(--text-3);
+    border-radius: 0 6px 6px 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text-2);
+  }
+
+  /* ── Steps ── */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding-bottom: 48px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+  .step {
+    padding: 0 4px;
+  }
+  .step-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--text-1);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.82rem;
+    margin-bottom: 10px;
+  }
+  .step h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .step p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text-2);
+  }
+
+  /* ── Section labels ── */
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+    margin-bottom: 12px;
+  }
+
+  /* ── Palette picker ── */
+  .palette-section {
+    margin-bottom: 32px;
+  }
+  .palette-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 10px;
+  }
+  .palette-card {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-card);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .palette-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .palette-card.selected {
+    border-color: var(--card-accent, var(--border));
+    box-shadow: 0 0 0 1px var(--card-accent), 0 2px 10px rgba(0,0,0,0.08);
+  }
+  .palette-card .sample-icon {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    flex-shrink: 0;
+  }
+  .pal-info { flex: 1; min-width: 0; }
+  .pal-name {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--text-1);
+    line-height: 1.2;
+  }
+  .pal-desc {
+    font-size: 0.72rem;
+    color: var(--text-2);
+    line-height: 1.3;
+  }
+  .pal-colors {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 2px;
+    margin-top: 4px;
+  }
+  .dot {
+    height: 5px;
+    border-radius: 1px;
+  }
+  .palette-card::after {
+    content: '';
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    transition: all 0.15s ease;
+  }
+  .palette-card.selected::after {
+    border-color: var(--card-accent);
+    background: var(--card-accent);
+    box-shadow: inset 0 0 0 2.5px var(--bg-card);
+  }
+
+  /* ── Config ── */
+  .config-section {
+    margin-bottom: 24px;
+  }
+  .config-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .stepper-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .stepper-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-2);
+  }
+  .stepper {
+    display: flex;
+    align-items: center;
+    background: var(--bg-page);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .stepper-btn {
+    width: 36px; height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--text-2);
+    cursor: pointer;
+    font-size: 1.15rem;
+    font-family: Arial, sans-serif;
+    transition: all 0.1s ease;
+    user-select: none;
+  }
+  .stepper-btn:hover {
+    background: var(--border);
+    color: var(--text-1);
+  }
+  .stepper-btn:active {
+    background: var(--text-1);
+    color: #fff;
+  }
+  .stepper-value {
+    width: 38px;
+    text-align: center;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--text-1);
+  }
+  .count-badge {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  /* ── Toggle group ── */
+  .toggle-group {
+    display: flex;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    background: var(--bg-page);
+  }
+  .toggle-btn {
+    padding: 7px 14px;
+    border: none;
+    background: transparent;
+    font-family: Arial, sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.1s ease;
+  }
+  .toggle-btn + .toggle-btn {
+    border-left: 1px solid var(--border);
+  }
+  .toggle-btn:hover:not(.selected) {
+    background: var(--border);
+    color: var(--text-1);
+  }
+  .toggle-btn.selected {
+    background: var(--text-1);
+    color: #fff;
+  }
+  .toggle-rec {
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    opacity: 0.7;
+    margin-left: 4px;
+  }
+
+  /* ── Download button ── */
+  .download-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 16px 24px;
+    margin-bottom: 28px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .download-btn:hover:not(:disabled) {
+    background: var(--green-hover);
+    box-shadow: 0 4px 16px rgba(22, 163, 74, 0.25);
+  }
+  .download-btn:active:not(:disabled) {
+    transform: scale(0.995);
+  }
+  .download-btn:disabled {
+    opacity: 0.7;
+    cursor: wait;
+  }
+  .download-btn svg { flex-shrink: 0; }
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2.5px solid #ffffff50;
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  /* ── Preview ── */
+  .preview-section {
+    margin-bottom: 0;
+  }
+  .preview-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .preview-hint {
+    font-size: 0.8rem;
+    color: var(--text-3);
+  }
+  .preview-area {
+    background: var(--bg-preview);
+    border-radius: 12px;
+    padding: 16px;
+    overflow-x: auto;
+    transition: opacity 0.18s ease;
+    min-height: 100px;
+  }
+  .preview-area::-webkit-scrollbar { height: 6px; }
+  .preview-area::-webkit-scrollbar-track { background: transparent; }
+  .preview-area::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+  }
+
+  .season-row {
+    display: flex;
+    align-items: flex-start;
+    min-width: max-content;
+  }
+  .season-row + .season-row {
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid #1e1e2a;
+  }
+  .season-label {
+    position: sticky;
+    left: 0; z-index: 2;
+    background: var(--bg-preview);
+    flex-shrink: 0;
+    width: 50px;
+    padding: 10px 6px 10px 4px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-align: center;
+    transition: color 0.3s ease;
+  }
+  .season-label::after {
+    content: '';
+    position: absolute;
+    top: 0; right: -6px; bottom: 0;
+    width: 6px;
+    background: linear-gradient(90deg, var(--bg-preview), transparent);
+    pointer-events: none;
+  }
+  .season-icons {
+    display: flex;
+    gap: 4px;
+    padding: 4px 8px 4px 4px;
+  }
+  .icon-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .preview-icon {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+  .preview-icon:hover {
+    transform: scale(1.18);
+    box-shadow: 0 4px 12px #00000060;
+    z-index: 3;
+    position: relative;
+  }
+  .preview-icon:active { transform: scale(1.05); }
+  .ep-label {
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    color: #555;
+    line-height: 1;
+  }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 32px 24px;
+    margin-top: 48px;
+    border-top: 1px solid var(--border);
+    font-size: 0.78rem;
+    color: var(--text-3);
+    line-height: 1.7;
+  }
+  footer a {
+    color: var(--text-2);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* ── Animations ── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .hero { padding: 32px 0 28px; }
+    .hero h1 { font-size: 1.4rem; }
+    .hero-title-row { gap: 10px; }
+    .steps { grid-template-columns: 1fr; gap: 16px; padding-bottom: 32px; margin-bottom: 28px; }
+    .palette-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .pal-desc { display: none; }
+    .config-row { gap: 16px; }
+    .preview-area { padding: 10px; }
+  }
+  @media (max-width: 420px) {
+    .container { padding: 0 16px; }
+    .palette-grid { grid-template-columns: 1fr; }
+    .config-row { gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar" id="topBar"></div>
+
+<div class="container">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-title-row">
+      <canvas class="logo-icon" id="logoIcon" width="48" height="48"></canvas>
+      <h1>Yoto Podcast Icon Generator</h1>
+    </div>
+    <span class="badge">Free &middot; No Sign-Up &middot; Open Source</span>
+    <p class="hero-desc"><a href="https://yotoplay.com" target="_blank" rel="noopener">Yoto</a> is a screen-free audio player for kids. With <a href="https://yotoplay.com" target="_blank" rel="noopener">Make Your Own</a> cards, you can load podcasts, audiobooks, and music onto blank NFC cards and build custom playlists. Each track can display a small icon on the player&rsquo;s screen &mdash; this tool generates 16&times;16 pixel icons with clear season and episode labels so listeners can identify tracks at a glance.</p>
+    <div class="hero-note">
+      <strong>Tip:</strong> Yoto recommends 16&times;16 PNG icons with a transparent background, avoiding pure black (which won&rsquo;t show on the player&rsquo;s dark display). This tool defaults to transparent backgrounds.
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="steps">
+    <div class="step">
+      <span class="step-num">1</span>
+      <h3>Pick a palette</h3>
+      <p>Choose from 8 curated color schemes. Each of up to 20 seasons gets its own color so listeners can tell them apart at a glance.</p>
+    </div>
+    <div class="step">
+      <span class="step-num">2</span>
+      <h3>Set your counts</h3>
+      <p>Enter how many seasons and episodes per season your podcast needs. The preview updates instantly.</p>
+    </div>
+    <div class="step">
+      <span class="step-num">3</span>
+      <h3>Download</h3>
+      <p>Grab all your icons in one ZIP file organized into season folders, or click any single icon to save it on its own.</p>
+    </div>
+  </section>
+
+  <!-- Palette picker -->
+  <section class="palette-section">
+    <div class="section-label">1 &middot; Color Palette</div>
+    <div class="palette-grid" id="paletteGrid"></div>
+  </section>
+
+  <!-- Configuration -->
+  <section class="config-section">
+    <div class="section-label">2 &middot; Configuration</div>
+    <div class="config-row">
+      <div class="stepper-group">
+        <span class="stepper-label">Seasons</span>
+        <div class="stepper">
+          <button class="stepper-btn" onclick="adjust('seasons',-1)" aria-label="Fewer seasons">&minus;</button>
+          <span class="stepper-value" id="seasonValue">3</span>
+          <button class="stepper-btn" onclick="adjust('seasons',1)" aria-label="More seasons">+</button>
+        </div>
+      </div>
+      <div class="stepper-group">
+        <span class="stepper-label">Episodes per season</span>
+        <div class="stepper">
+          <button class="stepper-btn" onclick="adjust('episodes',-1)" aria-label="Fewer episodes">&minus;</button>
+          <span class="stepper-value" id="episodeValue">15</span>
+          <button class="stepper-btn" onclick="adjust('episodes',1)" aria-label="More episodes">+</button>
+        </div>
+      </div>
+      <div class="stepper-group">
+        <span class="stepper-label">Background</span>
+        <div class="toggle-group">
+          <button class="toggle-btn selected" id="bgTransparent" onclick="setBgMode('transparent')">Transparent<span class="toggle-rec">rec.</span></button>
+          <button class="toggle-btn" id="bgDark" onclick="setBgMode('dark')">Dark</button>
+        </div>
+      </div>
+      <span class="count-badge" id="iconCount">45 icons</span>
+    </div>
+  </section>
+
+  <!-- Download -->
+  <section>
+    <div class="section-label">3 &middot; Download</div>
+    <button class="download-btn" id="downloadBtn" onclick="downloadAll()">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v9M4.5 7 8 10.5 11.5 7M2.5 13.5h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="downloadLabel">Download 45 Icons as ZIP</span>
+    </button>
+  </section>
+
+  <!-- Preview -->
+  <section class="preview-section">
+    <div class="preview-header">
+      <div class="section-label" style="margin-bottom:0">Preview</div>
+      <span class="preview-hint">Click any icon to save it individually</span>
+    </div>
+    <div class="preview-area" id="previewArea"></div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Yoto Podcast Icon Generator &middot; Released under the <a href="LICENSE">MIT License</a><br>
+    Icons are 16&times;16 px PNG files with pixel-perfect rendering. Not affiliated with Yoto Ltd.
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+// ─────────────────────────────────────────────
+// Bitmap Font (3×5 pixels per character)
+// ─────────────────────────────────────────────
+const FONT = {
+  '0': [[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1]],
+  '1': [[0,1,0],[1,1,0],[0,1,0],[0,1,0],[1,1,1]],
+  '2': [[1,1,1],[0,0,1],[1,1,1],[1,0,0],[1,1,1]],
+  '3': [[1,1,1],[0,0,1],[1,1,1],[0,0,1],[1,1,1]],
+  '4': [[1,0,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1]],
+  '5': [[1,1,1],[1,0,0],[1,1,1],[0,0,1],[1,1,1]],
+  '6': [[1,1,1],[1,0,0],[1,1,1],[1,0,1],[1,1,1]],
+  '7': [[1,1,1],[0,0,1],[0,0,1],[0,1,0],[0,1,0]],
+  '8': [[1,1,1],[1,0,1],[1,1,1],[1,0,1],[1,1,1]],
+  '9': [[1,1,1],[1,0,1],[1,1,1],[0,0,1],[1,1,1]],
+  'S': [[1,1,1],[1,0,0],[1,1,1],[0,0,1],[1,1,1]],
+  'E': [[1,1,1],[1,0,0],[1,1,0],[1,0,0],[1,1,1]],
+  'P': [[1,1,1],[1,0,1],[1,1,1],[1,0,0],[1,0,0]],
+  '-': [[0,0,0],[0,0,0],[1,1,1],[0,0,0],[0,0,0]],
+  ' ': [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
+};
+
+// ─────────────────────────────────────────────
+// Color Palettes
+// ─────────────────────────────────────────────
+const PALETTES = {
+  original: {
+    name: 'Original',
+    desc: 'Distinct saturated hues',
+    colors: [
+      '#4A90D9','#50C878','#E74C3C','#F39C12','#9B59B6',
+      '#1ABC9C','#E91E63','#FF6F00','#00BCD4','#8BC34A',
+      '#795548','#607D8B','#FFEB3B','#7B1FA2','#00897B',
+      '#FF5722','#3949AB','#F48FB1','#00ACC1','#AFB42B'
+    ]
+  },
+  cmyk: {
+    name: 'CMYK',
+    desc: 'Cyan, magenta, yellow + mixes',
+    colors: [
+      '#00AADD','#DD0077','#DDCC00','#00AA77','#7700AA',
+      '#DD6600','#0077DD','#AA0055','#00DD99','#DD3388',
+      '#009999','#BB4400','#6600CC','#AADD00','#DD0044',
+      '#0055AA','#CC7700','#880088','#00CC66','#DD5599'
+    ]
+  },
+  cmyk_bright: {
+    name: 'CMYK Bright',
+    desc: 'Pure CMYK, vivid secondaries',
+    colors: [
+      '#00CCFF','#FF00CC','#FFCC00','#00FF88','#8800FF',
+      '#FF6600','#0088FF','#CC0066','#88DD00','#FF3399',
+      '#00FFCC','#FF4400','#5500FF','#CCFF00','#FF0066',
+      '#0044FF','#FF9900','#AA00FF','#00FF44','#FF0099'
+    ]
+  },
+  warm: {
+    name: 'Warm',
+    desc: 'Reds, oranges, yellows, pinks',
+    colors: [
+      '#E74C3C','#FF6F00','#F39C12','#FFD600','#E91E63',
+      '#FF5252','#FF8F00','#D84315','#F06292','#FFAB40',
+      '#C62828','#E65100','#F9A825','#FFD740','#AD1457',
+      '#FF1744','#EF6C00','#BF360C','#EC407A','#FFC400'
+    ]
+  },
+  cool: {
+    name: 'Cool',
+    desc: 'Blues, greens, teals, purples',
+    colors: [
+      '#2196F3','#00BCD4','#009688','#4CAF50','#7C4DFF',
+      '#1DE9B6','#3F51B5','#00E5FF','#69F0AE','#651FFF',
+      '#1565C0','#00838F','#00695C','#2E7D32','#4527A0',
+      '#00BFA5','#283593','#0091EA','#00C853','#AA00FF'
+    ]
+  },
+  pastel: {
+    name: 'Pastel',
+    desc: 'Soft muted tones',
+    colors: [
+      '#7EB8DA','#82CA9D','#E88E8E','#F0C674','#B094D0',
+      '#7ECAC5','#E088A8','#D9A86C','#88C8D0','#A8D08D',
+      '#A0C4E8','#9ED4B0','#F0A8A0','#F5D590','#C8AEE0',
+      '#98D8D0','#F0A0B8','#E4C08E','#A0D8E0','#B8E0A0'
+    ]
+  },
+  neon: {
+    name: 'Neon',
+    desc: 'Maximum brightness, high contrast',
+    colors: [
+      '#00E5FF','#00FF66','#FF1744','#FFEA00','#D500F9',
+      '#00E676','#FF4081','#FF9100','#18FFFF','#76FF03',
+      '#00B0FF','#00FFAA','#FF3D00','#FFD600','#E040FB',
+      '#64FFDA','#FF80AB','#FFAB00','#84FFFF','#B2FF59'
+    ]
+  },
+  rainbow: {
+    name: 'Rainbow',
+    desc: 'Even hue distribution across the wheel',
+    colors: [
+      '#FF0044','#FF3300','#FF6600','#FF9900','#FFCC00',
+      '#DDEE00','#88DD00','#00CC22','#00CC66','#00CCAA',
+      '#00CCDD','#0099FF','#0055FF','#0000FF','#4400DD',
+      '#7700BB','#AA0099','#DD0077','#FF0055','#FF0033'
+    ]
+  }
+};
+
+// ─────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────
+const state = { palette: 'original', seasons: 3, episodes: 15, bgMode: 'transparent' };
+
+// ─────────────────────────────────────────────
+// Core Rendering
+// ─────────────────────────────────────────────
+function getColor(palKey, season) {
+  return PALETTES[palKey].colors[(season - 1) % PALETTES[palKey].colors.length];
+}
+
+function renderChar(ctx, ch, x, y, color) {
+  const b = FONT[ch];
+  if (!b) return;
+  ctx.fillStyle = color;
+  for (let r = 0; r < 5; r++)
+    for (let c = 0; c < 3; c++)
+      if (b[r][c]) ctx.fillRect(x + c, y + r, 1, 1);
+}
+
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+function renderIconLine(ctx, letter, num, y, color) {
+  const d = pad2(num);
+  renderChar(ctx, letter, 2, y, color);
+  renderChar(ctx, d[0], 7, y, color);
+  renderChar(ctx, d[1], 11, y, color);
+}
+
+function renderIcon(ctx, season, episode, palKey, forceDarkBg) {
+  if (forceDarkBg || state.bgMode === 'dark') {
+    ctx.fillStyle = '#2a2a3e';
+    ctx.fillRect(0, 0, 16, 16);
+  }
+  renderIconLine(ctx, 'S', season, 2, getColor(palKey, season));
+  renderIconLine(ctx, 'E', episode, 9, '#FFFFFF');
+}
+
+function createIconCanvas(season, episode, palKey, forceDarkBg) {
+  const c = document.createElement('canvas');
+  c.width = 16; c.height = 16;
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  renderIcon(ctx, season, episode, palKey, forceDarkBg);
+  return c;
+}
+
+function createScaledCanvas(season, episode, palKey, size, forceDarkBg) {
+  const src = createIconCanvas(season, episode, palKey, forceDarkBg);
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(src, 0, 0, size, size);
+  return c;
+}
+
+// ─────────────────────────────────────────────
+// Palette Cards
+// ─────────────────────────────────────────────
+function buildPaletteCards() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  for (const [key, pal] of Object.entries(PALETTES)) {
+    const card = document.createElement('div');
+    card.className = 'palette-card' + (key === state.palette ? ' selected' : '');
+    card.dataset.palette = key;
+    card.style.setProperty('--card-accent', pal.colors[0]);
+    card.onclick = () => selectPalette(key);
+
+    const sample = createScaledCanvas(1, 5, key, 32, true);
+    sample.className = 'sample-icon';
+    card.appendChild(sample);
+
+    const info = document.createElement('div');
+    info.className = 'pal-info';
+    info.innerHTML = '<div class="pal-name">' + pal.name + '</div><div class="pal-desc">' + pal.desc + '</div>';
+    card.appendChild(info);
+
+    const colors = document.createElement('div');
+    colors.className = 'pal-colors';
+    pal.colors.forEach(c => {
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      dot.style.backgroundColor = c;
+      colors.appendChild(dot);
+    });
+    card.appendChild(colors);
+    grid.appendChild(card);
+  }
+}
+
+function selectPalette(key) {
+  state.palette = key;
+  document.querySelectorAll('.palette-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.palette === key);
+  });
+  updateTopBar();
+  updateLogoIcon();
+  updatePreview();
+  updateDownloadLabel();
+}
+
+// ─────────────────────────────────────────────
+// Config
+// ─────────────────────────────────────────────
+function adjust(type, delta) {
+  if (type === 'seasons') {
+    state.seasons = Math.max(1, Math.min(20, state.seasons + delta));
+    document.getElementById('seasonValue').textContent = state.seasons;
+  } else {
+    state.episodes = Math.max(1, Math.min(99, state.episodes + delta));
+    document.getElementById('episodeValue').textContent = state.episodes;
+  }
+  updateIconCount();
+  updateDownloadLabel();
+  updatePreview();
+}
+
+function updateIconCount() {
+  const n = state.seasons * state.episodes;
+  document.getElementById('iconCount').textContent = n + ' icon' + (n !== 1 ? 's' : '');
+}
+
+function updateDownloadLabel() {
+  const n = state.seasons * state.episodes;
+  document.getElementById('downloadLabel').textContent =
+    'Download ' + n + ' Icon' + (n !== 1 ? 's' : '') + ' as ZIP';
+}
+
+// ─────────────────────────────────────────────
+// Preview
+// ─────────────────────────────────────────────
+function updatePreview() {
+  const area = document.getElementById('previewArea');
+  area.style.opacity = '0';
+  setTimeout(() => {
+    area.innerHTML = '';
+    for (let s = 1; s <= state.seasons; s++) {
+      const row = document.createElement('div');
+      row.className = 'season-row';
+
+      const label = document.createElement('div');
+      label.className = 'season-label';
+      label.style.color = getColor(state.palette, s);
+      label.textContent = 'S' + pad2(s);
+      row.appendChild(label);
+
+      const icons = document.createElement('div');
+      icons.className = 'season-icons';
+      for (let e = 1; e <= state.episodes; e++) {
+        const cell = document.createElement('div');
+        cell.className = 'icon-cell';
+
+        const canvas = createScaledCanvas(s, e, state.palette, 48);
+        canvas.className = 'preview-icon';
+        canvas.title = 'S' + pad2(s) + ' E' + pad2(e) + ' \u2014 click to download';
+        canvas.onclick = () => downloadSingle(s, e, state.palette);
+        cell.appendChild(canvas);
+
+        const lbl = document.createElement('span');
+        lbl.className = 'ep-label';
+        lbl.textContent = pad2(e);
+        cell.appendChild(lbl);
+
+        icons.appendChild(cell);
+      }
+      row.appendChild(icons);
+      area.appendChild(row);
+    }
+    area.style.opacity = '1';
+  }, 150);
+}
+
+// ─────────────────────────────────────────────
+// Logo Icon
+// ─────────────────────────────────────────────
+function updateLogoIcon() {
+  const el = document.getElementById('logoIcon');
+  const ctx = el.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, 48, 48);
+  const src = createIconCanvas(1, 1, state.palette, true);
+  ctx.drawImage(src, 0, 0, 48, 48);
+}
+
+// ─────────────────────────────────────────────
+// Background Mode
+// ─────────────────────────────────────────────
+function setBgMode(mode) {
+  state.bgMode = mode;
+  document.getElementById('bgTransparent').classList.toggle('selected', mode === 'transparent');
+  document.getElementById('bgDark').classList.toggle('selected', mode === 'dark');
+  updatePreview();
+}
+
+// ─────────────────────────────────────────────
+// Top Bar
+// ─────────────────────────────────────────────
+function updateTopBar() {
+  const colors = PALETTES[state.palette].colors;
+  const stops = colors.map((c, i) => c + ' ' + (i * 100 / (colors.length - 1)).toFixed(1) + '%');
+  document.getElementById('topBar').style.background = 'linear-gradient(90deg, ' + stops.join(', ') + ')';
+}
+
+// ─────────────────────────────────────────────
+// Export
+// ─────────────────────────────────────────────
+function downloadSingle(season, episode, palKey) {
+  const c = createIconCanvas(season, episode, palKey);
+  c.toBlob(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'S' + pad2(season) + '_E' + pad2(episode) + '.png';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }, 'image/png');
+}
+
+async function downloadAll() {
+  if (typeof JSZip === 'undefined') { alert('JSZip not loaded. Check your internet connection.'); return; }
+  const btn = document.getElementById('downloadBtn');
+  btn.innerHTML = '<span class="spinner"></span> Generating\u2026';
+  btn.disabled = true;
+  try {
+    const zip = new JSZip();
+    for (let s = 1; s <= state.seasons; s++) {
+      const folder = zip.folder('Season_' + pad2(s));
+      for (let e = 1; e <= state.episodes; e++) {
+        const c = createIconCanvas(s, e, state.palette);
+        const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+        folder.file('S' + pad2(s) + '_E' + pad2(e) + '.png', blob);
+      }
+    }
+    const content = await zip.generateAsync({ type: 'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(content);
+    a.download = 'yoto_icons_' + state.palette + '.zip';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch (err) {
+    alert('Error generating ZIP: ' + err.message);
+  }
+  // Restore button
+  const svg = '<svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v9M4.5 7 8 10.5 11.5 7M2.5 13.5h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  btn.innerHTML = svg + ' <span id="downloadLabel"></span>';
+  btn.disabled = false;
+  updateDownloadLabel();
+}
+
+// ─────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────
+buildPaletteCards();
+updateTopBar();
+updateLogoIcon();
+updateIconCount();
+updateDownloadLabel();
+updatePreview();
+</script>
+</body>
+</html>
